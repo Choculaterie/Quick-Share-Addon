@@ -30,8 +30,14 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
     @Unique private int originalWidth = 0;
 
     @Unique private boolean isLitematicFile() {
-        File file = entry.getFullPath().toFile();
-        return file.isFile() && file.getName().toLowerCase().endsWith(".litematic");
+        File dir = entry.getDirectory();
+        String name = entry.getDisplayName();
+        File file = new File(dir, name);
+        return file.isFile() && name.toLowerCase().endsWith(".litematic");
+    }
+
+    @Unique private File getEntryFile() {
+        return new File(entry.getDirectory(), entry.getDisplayName());
     }
 
     @Unique private boolean isMouseOverButton(int mouseX, int mouseY) {
@@ -81,7 +87,7 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
         int actualMouseX = lastMouseX;
         int actualMouseY = lastMouseY;
 
-        File file = entry.getFullPath().toFile();
+        File file = getEntryFile();
         if (!file.isFile() || !file.getName().toLowerCase().endsWith(".litematic")) {
             QuickShareClickTracker.clearButtonBounds(entry);
             return;
@@ -137,7 +143,7 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
 
     @Unique
     private boolean handleButtonClick(double mouseX, double mouseY) {
-        File file = entry.getFullPath().toFile();
+        File file = getEntryFile();
         if (file.isFile() && file.getName().toLowerCase().endsWith(".litematic")) {
             int buttonX = this.getX() + originalWidth - BUTTON_WIDTH;
             int buttonY = this.getY();
