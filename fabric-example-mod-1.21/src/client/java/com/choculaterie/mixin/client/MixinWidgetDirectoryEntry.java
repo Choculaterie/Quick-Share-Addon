@@ -5,8 +5,7 @@ import com.choculaterie.util.QuickShareClickTracker;
 import fi.dy.masa.malilib.gui.widgets.WidgetBase;
 import fi.dy.masa.malilib.gui.widgets.WidgetDirectoryEntry;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase;
-import fi.dy.masa.malilib.render.GuiContext;
-import fi.dy.masa.malilib.render.RenderUtils;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,7 +42,7 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
     }
 
     @Inject(method = "render", at = @At("HEAD"))
-    private void beforeRender(GuiContext context, int mouseX, int mouseY, boolean isActiveGui, CallbackInfo ci) {
+    private void beforeRender(GuiGraphics graphics, int mouseX, int mouseY, boolean isActiveGui, CallbackInfo ci) {
         lastMouseX = mouseX;
         lastMouseY = mouseY;
         originalWidth = this.getWidth();
@@ -62,14 +61,26 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
         return isMouseOverButton(lastMouseX, mouseY) ? -1 : mouseY;
     }
 
+    @Unique
+    private void drawColoredRect(GuiGraphics graphics, int x, int y, int width, int height, int color) {
+        int alpha = (color >> 24) & 0xFF;
+        int red = (color >> 16) & 0xFF;
+        int green = (color >> 8) & 0xFF;
+        int blue = color & 0xFF;
+
+        int argbColor = (alpha << 24) | (red << 16) | (green << 8) | blue;
+        graphics.fillGradient(x, y, x + width, y + height, argbColor, argbColor);
+    }
+
     @Inject(method = "render", at = @At("RETURN"))
-    private void afterRender(GuiContext context, int mouseX, int mouseY, boolean isActiveGui, CallbackInfo ci) {
+    private void afterRender(GuiGraphics graphics, int mouseX, int mouseY, boolean isActiveGui, CallbackInfo ci) {
         if (isLitematicFile()) {
             this.setWidth(originalWidth);
         }
 
-        mouseX = lastMouseX;
-        mouseY = lastMouseY;
+        int actualMouseX = lastMouseX;
+        int actualMouseY = lastMouseY;
+
         File file = entry.getFullPath().toFile();
         if (!file.isFile() || !file.getName().toLowerCase().endsWith(".litematic")) {
             QuickShareClickTracker.clearButtonBounds(entry);
@@ -86,8 +97,8 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
         int buttonY = this.getY();
         QuickShareClickTracker.updateButtonBounds(entry, buttonX, buttonY, BUTTON_WIDTH, buttonHeight);
 
-        boolean isHovered = mouseX >= buttonX && mouseX < buttonX + BUTTON_WIDTH &&
-                           mouseY >= buttonY && mouseY < buttonY + buttonHeight;
+        boolean isHovered = actualMouseX >= buttonX && actualMouseX < buttonX + BUTTON_WIDTH &&
+                           actualMouseY >= buttonY && actualMouseY < buttonY + buttonHeight;
 
         int bgColor, borderColor;
         String text;
@@ -101,16 +112,16 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
             bgColor = 0xFF3366CC; borderColor = 0xFF4477DD; text = "📤 Share";
         }
 
-        RenderUtils.drawRect(context, buttonX, buttonY, BUTTON_WIDTH, buttonHeight, bgColor);
-        RenderUtils.drawRect(context, buttonX, buttonY, BUTTON_WIDTH, 1, borderColor);
-        RenderUtils.drawRect(context, buttonX, buttonY + buttonHeight - 1, BUTTON_WIDTH, 1, borderColor);
-        RenderUtils.drawRect(context, buttonX, buttonY, 1, buttonHeight, borderColor);
-        RenderUtils.drawRect(context, buttonX + BUTTON_WIDTH - 1, buttonY, 1, buttonHeight, borderColor);
-
+        drawColoredRect(graphics, buttonX, buttonY, BUTTON_WIDTH, buttonHeight, bgColor);
+        drawColoredRect(graphics, buttonX, buttonY, BUTTON_WIDTH, 1, borderColor);
+        drawColoredRect(graphics, buttonX, buttonY + buttonHeight - 1, BUTTON_WIDTH, 1, borderColor);
+        drawColoredRect(graphics, buttonX, buttonY, 1, buttonHeight, borderColor);
+        drawColoredRect(graphics, buttonX + BUTTON_WIDTH - 1, buttonY, 1, buttonHeight, borderColor);
+        
         int textWidth = this.getStringWidth(text);
         int textX = buttonX + (BUTTON_WIDTH - textWidth) / 2;
         int textY = buttonY + (buttonHeight - 8) / 2;
-        this.drawStringWithShadow(context, textX, textY, 0xFFFFFFFF, text);
+        this.drawStringWithShadow(graphics, textX, textY, 0xFFFFFFFF, text);
     }
 
     @Inject(method = "onMouseClickedImpl", at = @At("HEAD"), cancellable = true)
