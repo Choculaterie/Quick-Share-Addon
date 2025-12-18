@@ -6,6 +6,7 @@ import fi.dy.masa.malilib.gui.widgets.WidgetBase;
 import fi.dy.masa.malilib.gui.widgets.WidgetDirectoryEntry;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
@@ -41,7 +42,7 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
     }
 
     @Inject(method = "render", at = @At("HEAD"))
-    private void beforeRender(GuiGraphics graphics, int mouseX, int mouseY, boolean isActiveGui, CallbackInfo ci) {
+    private void beforeRender(int mouseX, int mouseY, boolean isActiveGui, GuiGraphics graphics, CallbackInfo ci) {
         lastMouseX = mouseX;
         lastMouseY = mouseY;
         originalWidth = this.getWidth();
@@ -72,7 +73,7 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
     }
 
     @Inject(method = "render", at = @At("RETURN"))
-    private void afterRender(GuiGraphics graphics, int mouseX, int mouseY, boolean isActiveGui, CallbackInfo ci) {
+    private void afterRender(int mouseX, int mouseY, boolean isActiveGui, GuiGraphics graphics, CallbackInfo ci) {
         if (isLitematicFile()) {
             this.setWidth(originalWidth);
         }
@@ -117,10 +118,11 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
         drawColoredRect(graphics, buttonX, buttonY, 1, buttonHeight, borderColor);
         drawColoredRect(graphics, buttonX + BUTTON_WIDTH - 1, buttonY, 1, buttonHeight, borderColor);
         
-        int textWidth = this.getStringWidth(text);
+        var font = Minecraft.getInstance().font;
+        int textWidth = font.width(text);
         int textX = buttonX + (BUTTON_WIDTH - textWidth) / 2;
         int textY = buttonY + (buttonHeight - 8) / 2;
-        this.drawStringWithShadow(graphics, textX, textY, 0xFFFFFFFF, text);
+        graphics.drawString(font, text, textX, textY, 0xFFFFFFFF, true);
     }
 
     @Intrinsic(displace = true)
