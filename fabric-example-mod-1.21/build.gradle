@@ -55,7 +55,6 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	
 	// Litematica and MaLiLib dependencies from Modrinth maven
-	// Users must have Litematica installed for this mod to work
 	modCompileOnly "maven.modrinth:malilib:${project.malilib_version}"
 	modCompileOnly "maven.modrinth:litematica:${project.litematica_version}"
 

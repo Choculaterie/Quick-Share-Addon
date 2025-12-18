@@ -6,8 +6,8 @@ import fi.dy.masa.malilib.gui.widgets.WidgetBase;
 import fi.dy.masa.malilib.gui.widgets.WidgetDirectoryEntry;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.input.MouseButtonEvent;
 import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.io.File;
 
 @Mixin(value = WidgetDirectoryEntry.class, remap = false)
@@ -124,23 +123,32 @@ public abstract class MixinWidgetDirectoryEntry extends WidgetBase {
         this.drawStringWithShadow(graphics, textX, textY, 0xFFFFFFFF, text);
     }
 
-    @Inject(method = "onMouseClickedImpl", at = @At("HEAD"), cancellable = true)
-    private void onQuickShareButtonClick(MouseButtonEvent click, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+    @Intrinsic(displace = true)
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return handleButtonClick(mouseX, mouseY);
+    }
+
+    @Intrinsic(displace = true)
+    public boolean onMouseClicked(int mouseX, int mouseY, int button) {
+        return handleButtonClick(mouseX, mouseY);
+    }
+
+    @Unique
+    private boolean handleButtonClick(double mouseX, double mouseY) {
         File file = entry.getFullPath().toFile();
-        if (!file.isFile() || !file.getName().toLowerCase().endsWith(".litematic")) return;
+        if (file.isFile() && file.getName().toLowerCase().endsWith(".litematic")) {
+            int buttonX = this.getX() + originalWidth - BUTTON_WIDTH;
+            int buttonY = this.getY();
+            int buttonRight = buttonX + BUTTON_WIDTH;
+            int buttonBottom = buttonY + this.getHeight();
+            boolean isInButton = mouseX >= buttonX && mouseX < buttonRight && mouseY >= buttonY && mouseY < buttonBottom;
 
-        int buttonX = this.getX() + originalWidth - BUTTON_WIDTH;
-        int buttonY = this.getY();
-        int buttonRight = buttonX + BUTTON_WIDTH;
-        int buttonBottom = buttonY + this.getHeight();
-        int clickX = (int) click.x();
-        int clickY = (int) click.y();
-        boolean isInButton = clickX >= buttonX && clickX < buttonRight && clickY >= buttonY && clickY < buttonBottom;
-
-        if (isInButton) {
-            QuickShareClickTracker.markPreventSelection();
-            LitematicaIntegration.shareLitematicFile(file);
-            cir.setReturnValue(false);
+            if (isInButton) {
+                QuickShareClickTracker.markPreventSelection();
+                LitematicaIntegration.shareLitematicFile(file);
+                return true;
+            }
         }
+        return false;
     }
 }
