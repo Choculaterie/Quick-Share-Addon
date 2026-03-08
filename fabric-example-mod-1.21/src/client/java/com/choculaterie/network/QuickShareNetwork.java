@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.util.concurrent.CompletableFuture;
 
 public class QuickShareNetwork {
-    private static final String BASE_URL = "https://choculaterie.com/api/LitematicDownloaderModAPI";
+    private static final String BASE_URL = "https://api.choculaterie.com/api/LitematicDownloaderModAPI";
     private static final Gson GSON = new Gson();
     private static final int TIMEOUT = 30000;
     private static final String BOUNDARY = "----WebKitFormBoundary" + System.currentTimeMillis();
