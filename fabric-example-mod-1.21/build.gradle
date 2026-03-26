@@ -56,8 +56,8 @@ dependencies {
 	
 	// Litematica and MaLiLib dependencies from local files
 	// Users must have Litematica installed for this mod to work
-	modCompileOnly files("run/mods/litematica-fabric-1.21.11-0.25.4.jar")
-	modCompileOnly files("run/mods/malilib-fabric-1.21.11-0.27.3.jar")
+	modCompileOnly files("run/mods/litematica-fabric-1.21.11-0.26.2.jar")
+	modCompileOnly files("run/mods/malilib-fabric-1.21.11-0.27.7.jar")
 
 }
 

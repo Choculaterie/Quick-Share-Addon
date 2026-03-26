@@ -4,7 +4,9 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"MixinWidgetDirectoryEntry",
-		"MixinWidgetListBase"
+		"MixinWidgetListBase",
+		"MixinCustomDirectoryEntry",
+		"WidgetDirectoryEntryAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1
