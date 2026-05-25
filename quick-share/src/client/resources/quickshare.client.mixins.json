@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "com.choculaterie.mixin.client",
+	"compatibilityLevel": "JAVA_22",
+	"client": [
+		"MixinWidgetDirectoryEntry",
+		"MixinWidgetListBase",
+		"MixinCustomDirectoryEntry",
+		"WidgetDirectoryEntryAccessor"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

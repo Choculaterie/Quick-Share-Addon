@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "quickshare",
+	"version": "${version}",
+	"name": "Quick-Share Addon",
+	"description": "Adds quick-share functionality to Litematica schematics",
+	"authors": [
+		"Choculat"
+	],
+	"contact": {
+		"homepage": "https://choculaterie.com/",
+		"sources": "https://github.com/choculaterie/Quick-Share-Addon",
+		"issues": "https://github.com/Choculaterie/Quick-Share-Addon/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/quickshare/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.choculaterie.QuickShareAddonClient"
+		]
+	},
+	"mixins": [
+		{
+			"config": "quickshare.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.1",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
+		"fabric-api": "*",
+		"litematica": "*"
+	}
+}
