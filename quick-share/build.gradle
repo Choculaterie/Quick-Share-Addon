@@ -31,6 +31,7 @@ repositories {
 			includeGroup "maven.modrinth"
 		}
 	}
+	mavenLocal()
 }
 
 loom {
@@ -57,6 +58,8 @@ dependencies {
 	// Users must have Litematica installed for this mod to work
 	compileOnly files("run/mods/litematica-fabric-26.3-0.29.1.jar")
 	compileOnly files("run/mods/malilib-fabric-26.3-0.30.2.jar")
+
+	implementation("com.choculaterie:vanilib:${project.vanilib_version}")
 
 }
 

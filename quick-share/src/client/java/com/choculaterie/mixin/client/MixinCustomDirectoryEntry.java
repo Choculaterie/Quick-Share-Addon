@@ -1,11 +1,11 @@
 package com.choculaterie.mixin.client;
 
 import com.choculaterie.integration.LitematicaIntegration;
+import com.choculaterie.ui.ShareButton;
 import com.choculaterie.util.QuickShareClickTracker;
 import fi.dy.masa.malilib.gui.widgets.WidgetBase;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase;
 import fi.dy.masa.malilib.render.GuiContext;
-import fi.dy.masa.malilib.render.RenderUtils;
 import net.minecraft.client.input.MouseButtonEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -23,7 +23,7 @@ public abstract class MixinCustomDirectoryEntry extends WidgetBase {
     protected MixinCustomDirectoryEntry(int x, int y, int width, int height) { super(x, y, width, height); }
 
     @Unique private static final int BUTTON_WIDTH = 80;
-    @Unique private static final int TILE_BTN = 20;
+    @Unique private static final int TILE_BTN = 21;
     @Unique private int lastMouseX = 0;
     @Unique private int lastMouseY = 0;
     @Unique private int originalWidth = 0;
@@ -82,7 +82,7 @@ public abstract class MixinCustomDirectoryEntry extends WidgetBase {
         }
 
         LitematicaIntegration.UploadState state = LitematicaIntegration.getUploadState(file);
-        if (state.showCopied && System.currentTimeMillis() - state.copiedTimestamp > 2000) {
+        if (state.showCopied && System.currentTimeMillis() - state.copiedTimestamp > ShareButton.COPIED_MS) {
             state.showCopied = false;
         }
 
@@ -93,26 +93,7 @@ public abstract class MixinCustomDirectoryEntry extends WidgetBase {
 
             boolean isHovered = mouseX >= bx && mouseX < bx + TILE_BTN && mouseY >= by && mouseY < by + TILE_BTN;
 
-            int bgColor, borderColor;
-            String text;
-            if (state.isUploading) {
-                bgColor = 0xFF555555; borderColor = 0xFF555555; text = "...";
-            } else if (state.showCopied) {
-                bgColor = 0xFF44AA44; borderColor = 0xFF4477DD; text = "✓";
-            } else if (isHovered) {
-                bgColor = 0xFF4488FF; borderColor = 0xFF66AAFF; text = "📤";
-            } else {
-                bgColor = 0xFF3366CC; borderColor = 0xFF4477DD; text = "📤";
-            }
-
-            RenderUtils.drawRect(context, bx, by, TILE_BTN, TILE_BTN, bgColor);
-            RenderUtils.drawRect(context, bx, by, TILE_BTN, 1, borderColor);
-            RenderUtils.drawRect(context, bx, by + TILE_BTN - 1, TILE_BTN, 1, borderColor);
-            RenderUtils.drawRect(context, bx, by, 1, TILE_BTN, borderColor);
-            RenderUtils.drawRect(context, bx + TILE_BTN - 1, by, 1, TILE_BTN, borderColor);
-
-            int textWidth = this.getStringWidth(text);
-            this.drawStringWithShadow(context, bx + (TILE_BTN - textWidth) / 2, by + (TILE_BTN - 8) / 2, 0xFFFFFFFF, text);
+            ShareButton.render(context, bx, by, TILE_BTN, TILE_BTN, state, isHovered, true);
         } else {
             int buttonX = this.getX() + originalWidth - BUTTON_WIDTH;
             int buttonY = this.getY();
@@ -122,28 +103,7 @@ public abstract class MixinCustomDirectoryEntry extends WidgetBase {
             boolean isHovered = mouseX >= buttonX && mouseX < buttonX + BUTTON_WIDTH &&
                                mouseY >= buttonY && mouseY < buttonY + buttonHeight;
 
-            int bgColor, borderColor;
-            String text;
-            if (state.isUploading) {
-                bgColor = 0xFF555555; borderColor = 0xFF555555; text = "Uploading...";
-            } else if (state.showCopied) {
-                bgColor = 0xFF44AA44; borderColor = 0xFF4477DD; text = "✓ Copied";
-            } else if (isHovered) {
-                bgColor = 0xFF4488FF; borderColor = 0xFF66AAFF; text = "📤 Share";
-            } else {
-                bgColor = 0xFF3366CC; borderColor = 0xFF4477DD; text = "📤 Share";
-            }
-
-            RenderUtils.drawRect(context, buttonX, buttonY, BUTTON_WIDTH, buttonHeight, bgColor);
-            RenderUtils.drawRect(context, buttonX, buttonY, BUTTON_WIDTH, 1, borderColor);
-            RenderUtils.drawRect(context, buttonX, buttonY + buttonHeight - 1, BUTTON_WIDTH, 1, borderColor);
-            RenderUtils.drawRect(context, buttonX, buttonY, 1, buttonHeight, borderColor);
-            RenderUtils.drawRect(context, buttonX + BUTTON_WIDTH - 1, buttonY, 1, buttonHeight, borderColor);
-
-            int textWidth = this.getStringWidth(text);
-            int textX = buttonX + (BUTTON_WIDTH - textWidth) / 2;
-            int textY = buttonY + (buttonHeight - 8) / 2;
-            this.drawStringWithShadow(context, textX, textY, 0xFFFFFFFF, text);
+            ShareButton.render(context, buttonX, buttonY, BUTTON_WIDTH, buttonHeight, state, isHovered, false);
         }
     }
 
@@ -170,6 +130,7 @@ public abstract class MixinCustomDirectoryEntry extends WidgetBase {
 
         if (isInButton) {
             QuickShareClickTracker.markPreventSelection();
+            ShareButton.playClick();
             LitematicaIntegration.shareLitematicFile(file);
             cir.setReturnValue(false);
         }
